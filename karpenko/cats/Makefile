@@ -1,0 +1,2 @@
+plot:
+	gnuplot plot

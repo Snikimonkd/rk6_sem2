@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
 
 	ch "cso/utils"
 )
@@ -74,8 +75,16 @@ func (cs CatSworm) Optimize(it int) []float64 {
 		{Item: TracingMode, Weight: 1 - cs.MR},
 	}
 
+	f, err := os.Create("data")
+	if err != nil {
+		fmt.Printf("can't create file: %v\n", err)
+	}
+
 	for i := 0; i < it; i++ {
 		bestCat := cs.getBestCat()
+		if i%50 == 0 {
+			plot(f, i, cs.Cats[bestCat].FS)
+		}
 		for j := range cs.Cats {
 			if j == bestCat {
 				continue
@@ -92,6 +101,13 @@ func (cs CatSworm) Optimize(it int) []float64 {
 	}
 
 	return cs.Cats[cs.getBestCat()].Coordinates
+}
+
+func plot(f *os.File, it int, val float64) {
+	_, err := f.WriteString(fmt.Sprintf("%d\t%f\n", it, val))
+	if err != nil {
+		fmt.Printf("can't write to file: %v\n", err)
+	}
 }
 
 func (cs CatSworm) Print() {
