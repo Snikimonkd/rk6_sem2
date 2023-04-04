@@ -1,4 +1,4 @@
-package basiccso
+package improvedcso
 
 import (
 	"math"
@@ -38,6 +38,9 @@ type Cat struct {
 	Velosities []float64
 	// MaxVelocity - максимальная скорость кошки
 	MaxVelocity float64
+
+	//
+	zatup int
 }
 
 func genRandMinus() float64 {
@@ -72,12 +75,22 @@ func NewCat(coordinates []float64, clonesAmount int, maxSeekingSpeed float64, ma
 	}
 }
 
-func (c Cat) Seek(f ch.FitnessFunction) Cat {
+func newSeekingSpeed(args []float64) float64 {
+	res := 0.
+	for i := 0; i < len(args); i++ {
+		res += args[i] * args[i]
+	}
+
+	return math.Sqrt(res)
+}
+
+func (c Cat) Seek(f ch.FitnessFunction, isBest bool, maxSeekingSpeed float64) Cat {
 	clones := make([]Cat, 0, c.ClonesAmount)
 	clones = append(clones, c)
 
 	fsMin := c.FS
 	ind := 0
+
 	for i := 1; i < c.ClonesAmount; i++ {
 		newCat := NewCat(c.Coordinates, c.ClonesAmount, c.MaxSeekingSpeed, c.MaxVelocity, SeekingMode)
 		newCat = newCat.move()
@@ -89,6 +102,14 @@ func (c Cat) Seek(f ch.FitnessFunction) Cat {
 
 		clones = append(clones, newCat)
 	}
+
+	if isBest && ind == 0 {
+		clones[ind].MaxSeekingSpeed = clones[ind].MaxSeekingSpeed * 0.5
+	}
+
+	// if isBest && ind != 0 {
+	// 	clones[ind].MaxSeekingSpeed = maxSeekingSpeed
+	// }
 
 	return clones[ind]
 }
@@ -104,7 +125,6 @@ func isNegative(in float64) bool {
 func (c Cat) Trace(bestCat Cat, f ch.FitnessFunction) Cat {
 	// какаято рандомная константа
 	C := 0.5
-	// рандомное число [0,1]
 	for i := range c.Velosities {
 		R := rand.Float64()
 		c.Velosities[i] = c.Velosities[i] + C*R*(bestCat.Coordinates[i]-c.Coordinates[i])

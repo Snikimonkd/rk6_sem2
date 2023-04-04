@@ -1,3 +1,6 @@
 set terminal png
 set output 'out.png'
-plot 'data' with lines
+set xrange [0:100]
+set nonlinear y via log10(y) inverse 10**y 
+set ytics nolog
+plot 'basic' u 1:2 with lines title 'basic', 'improved' u 1:2 with lines title 'improved'

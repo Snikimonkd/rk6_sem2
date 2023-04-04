@@ -1,10 +1,10 @@
-package basiccso
+package improvedcso
 
 import (
 	"fmt"
 	"math/rand"
 
-	"cso/utils"
+	utils "cso/utils"
 )
 
 type CatSworm struct {
@@ -64,7 +64,7 @@ func (cs CatSworm) getBestCat() int {
 	return ind
 }
 
-func (cs CatSworm) Optimize(it int) ([]float64, []utils.Graph) {
+func (cs CatSworm) Optimize(it int, maxSeekingSpeed float64) ([]float64, []utils.Graph) {
 	res := make([]utils.Graph, 0, it)
 	choices := []utils.Choice[Mode]{
 		{Item: SeekingMode, Weight: cs.MR},
@@ -74,13 +74,11 @@ func (cs CatSworm) Optimize(it int) ([]float64, []utils.Graph) {
 	for i := 0; i < it; i++ {
 		bestCat := cs.getBestCat()
 		res = append(res, utils.Graph{F: cs.F(cs.Cats[bestCat].Coordinates), It: i})
+		cs.Cats[bestCat].Mode = SeekingMode
 		for j := range cs.Cats {
-			if j == bestCat {
-				continue
-			}
 			switch cs.Cats[j].Mode {
 			case SeekingMode:
-				cs.Cats[j] = cs.Cats[j].Seek(cs.F)
+				cs.Cats[j] = cs.Cats[j].Seek(cs.F, j == bestCat, maxSeekingSpeed)
 			case TracingMode:
 				cs.Cats[j] = cs.Cats[j].Trace(cs.Cats[bestCat], cs.F)
 			}
