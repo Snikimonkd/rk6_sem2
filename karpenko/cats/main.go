@@ -26,8 +26,8 @@ func main() {
 	impG := make([]utils.Graph, 100, 100)
 
 	rand.Seed(time.Now().Unix())
-	rasm := []int{2}
-	f := utils.Bil
+	rasm := []int{64}
+	f := utils.Rozenbrok
 	for j := 0; j < len(rasm); j++ {
 		fBestBasic := 1000.
 		fAvgBasic := 0.
@@ -81,6 +81,11 @@ func main() {
 			if res < 0.01 {
 				cImp++
 			}
+
+			if i == 99 {
+				sworm.Print()
+			}
+
 		}
 
 		fmt.Printf("Размерность: %d\n", rasm[j])

@@ -52,24 +52,25 @@ func genRandMinus() float64 {
 	return 1.
 }
 
-func genRandVelocities(dimensions int, maxSeekingVelosicty float64) []float64 {
+func genRandVelocities(dimensions int, maxSeekingVelosicty float64, it int) []float64 {
+	a := 0.9
 	velocities := make([]float64, 0, dimensions)
 	for i := 0; i < dimensions; i++ {
-		randVelocity := rand.Float64() * maxSeekingVelosicty * genRandMinus()
+		randVelocity := rand.Float64() * maxSeekingVelosicty * genRandMinus() * (float64(100) - float64(it)) / float64(100) * a
 		velocities = append(velocities, randVelocity)
 	}
 
 	return velocities
 }
 
-func NewCat(coordinates []float64, clonesAmount int, maxSeekingSpeed float64, maxVelocity float64, mode Mode) Cat {
+func NewCat(coordinates []float64, clonesAmount int, maxSeekingSpeed float64, maxVelocity float64, mode Mode, it int) Cat {
 	cords := make([]float64, len(coordinates))
 	copy(cords, coordinates)
 	return Cat{
 		Coordinates:     cords,
 		ClonesAmount:    clonesAmount,
 		MaxSeekingSpeed: maxSeekingSpeed,
-		Velosities:      genRandVelocities(len(coordinates), maxSeekingSpeed),
+		Velosities:      genRandVelocities(len(coordinates), maxSeekingSpeed, it),
 		MaxVelocity:     maxVelocity,
 		Mode:            mode,
 	}
@@ -84,7 +85,7 @@ func newSeekingSpeed(args []float64) float64 {
 	return math.Sqrt(res)
 }
 
-func (c Cat) Seek(f ch.FitnessFunction, isBest bool, maxSeekingSpeed float64) Cat {
+func (c Cat) Seek(f ch.FitnessFunction, isBest bool, it int) Cat {
 	clones := make([]Cat, 0, c.ClonesAmount)
 	clones = append(clones, c)
 
@@ -92,7 +93,7 @@ func (c Cat) Seek(f ch.FitnessFunction, isBest bool, maxSeekingSpeed float64) Ca
 	ind := 0
 
 	for i := 1; i < c.ClonesAmount; i++ {
-		newCat := NewCat(c.Coordinates, c.ClonesAmount, c.MaxSeekingSpeed, c.MaxVelocity, SeekingMode)
+		newCat := NewCat(c.Coordinates, c.ClonesAmount, c.MaxSeekingSpeed, c.MaxVelocity, SeekingMode, it)
 		newCat = newCat.move()
 		newCat.FS = f(newCat.Coordinates)
 		if newCat.FS < fsMin {
@@ -103,9 +104,9 @@ func (c Cat) Seek(f ch.FitnessFunction, isBest bool, maxSeekingSpeed float64) Ca
 		clones = append(clones, newCat)
 	}
 
-	if isBest && ind == 0 {
-		clones[ind].MaxSeekingSpeed = clones[ind].MaxSeekingSpeed * 0.5
-	}
+	// if isBest && ind == 0 {
+	// 	clones[ind].MaxSeekingSpeed = clones[ind].MaxSeekingSpeed * 0.5
+	// }
 
 	// if isBest && ind != 0 {
 	// 	clones[ind].MaxSeekingSpeed = maxSeekingSpeed

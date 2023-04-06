@@ -37,7 +37,7 @@ func NewCatSworm(amount int, dimensions int, area float64, f utils.FitnessFuncti
 		mode := utils.Choose(choices)
 		cords := genRandCoordinates(dimensions, area)
 
-		cat := NewCat(cords, clonesAmount, maxSeekingSpeed, maxVelocity, mode)
+		cat := NewCat(cords, clonesAmount, maxSeekingSpeed, maxVelocity, mode, 0)
 		cat.FS = f(cat.Coordinates)
 		cats = append(cats, cat)
 	}
@@ -78,7 +78,7 @@ func (cs CatSworm) Optimize(it int, maxSeekingSpeed float64) ([]float64, []utils
 		for j := range cs.Cats {
 			switch cs.Cats[j].Mode {
 			case SeekingMode:
-				cs.Cats[j] = cs.Cats[j].Seek(cs.F, j == bestCat, maxSeekingSpeed)
+				cs.Cats[j] = cs.Cats[j].Seek(cs.F, j == bestCat, i)
 			case TracingMode:
 				cs.Cats[j] = cs.Cats[j].Trace(cs.Cats[bestCat], cs.F)
 			}
