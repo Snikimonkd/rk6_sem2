@@ -64,7 +64,7 @@ func (cs CatSworm) getBestCat() int {
 	return ind
 }
 
-func (cs CatSworm) Optimize(it int, maxSeekingSpeed float64) ([]float64, []utils.Graph) {
+func (cs CatSworm) Optimize(it int) ([]float64, []utils.Graph) {
 	res := make([]utils.Graph, 0, it)
 	choices := []utils.Choice[Mode]{
 		{Item: SeekingMode, Weight: cs.MR},

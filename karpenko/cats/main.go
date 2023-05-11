@@ -13,6 +13,37 @@ import (
 	"cso/utils"
 )
 
+func distLevi(arr []float64) float64 {
+	x := arr[0]
+	y := arr[1]
+
+	return math.Sqrt(math.Pow(x-1., 2) + math.Pow(y-1., 2))
+
+}
+
+func distBut(arr []float64) float64 {
+	x := arr[0]
+	y := arr[1]
+
+	return math.Sqrt(math.Pow(x-1., 2) + math.Pow(y-3., 2))
+
+}
+
+func distBil(arr []float64) float64 {
+	x := arr[0]
+	y := arr[1]
+
+	return math.Sqrt(math.Pow(x-3., 2) + math.Pow(y-0.5, 2))
+}
+
+func distRozenbrok(x []float64) float64 {
+	res := 0.
+	for i := 0; i < len(x); i++ {
+		res += (x[i] - 1) * (x[i] - 1)
+	}
+	return math.Sqrt(res)
+}
+
 func dist(x []float64) float64 {
 	res := 0.
 	for i := 0; i < len(x); i++ {
@@ -21,14 +52,30 @@ func dist(x []float64) float64 {
 	return math.Sqrt(res)
 }
 
-func main() {
-	basicG := make([]utils.Graph, 100, 100)
-	impG := make([]utils.Graph, 100, 100)
+var f = utils.Rozenbrok
 
-	rand.Seed(time.Now().Unix())
-	rasm := []int{64}
-	f := utils.Rozenbrok
-	for j := 0; j < len(rasm); j++ {
+const amount = 50
+const area = 4.5
+const mr = 0.2
+const clonesAmount = 10
+const maxSeekingSpeed = 0.5
+const maxVelocity = 0.5
+const lyambda = 0.01
+
+var rasm = []int{2, 4, 8, 16, 32, 64}
+
+const actual = 0.
+
+func main() {
+	for r := 0; r < len(rasm); r++ {
+		eps := float64(area*2) * math.Sqrt(math.Sqrt(float64(rasm[r]))) * lyambda
+		fmt.Println("eps=", eps)
+		fmt.Printf("Размерность: %d\n", rasm[r])
+
+		basicG := make([]utils.Graph, 1000, 1000)
+		impG := make([]utils.Graph, 1000, 1000)
+
+		rand.Seed(time.Now().Unix())
 		fBestBasic := 1000.
 		fAvgBasic := 0.
 		xBestBasic := 1000.
@@ -42,8 +89,8 @@ func main() {
 		cImp := 0
 
 		for i := 0; i < 100; i++ {
-			sworm := basiccso.NewCatSworm(50, rasm[j], 4.5, f, 0.2, 10, 0.05, 0.5)
-			args, graph := sworm.Optimize(100)
+			sworm := basiccso.NewCatSworm(amount, rasm[r], area, f, mr, clonesAmount, maxSeekingSpeed, maxVelocity)
+			args, graph := sworm.Optimize(1000)
 			basicG = utils.Add(basicG, graph)
 
 			res := f(args)
@@ -52,18 +99,18 @@ func main() {
 				fBestBasic = res
 			}
 
-			dis := dist(args)
+			dis := distRozenbrok(args)
 			xAvgBasic += dis
 			if dis < xBestBasic {
 				xBestBasic = dis
 			}
 
-			if res < 0.01 {
+			if math.Abs(res-actual) < eps {
 				cBasic++
 			}
 
-			improvedSworm := improvedcso.NewCatSworm(50, rasm[j], 4.5, f, 0.2, 10, 0.1, 0.5)
-			args, graph = improvedSworm.Optimize(100, 0.2)
+			improvedSworm := improvedcso.NewCatSworm(amount, rasm[r], area, f, mr, clonesAmount, maxSeekingSpeed, maxVelocity)
+			args, graph = improvedSworm.Optimize(1000)
 			impG = utils.Add(impG, graph)
 
 			res = f(args)
@@ -72,58 +119,46 @@ func main() {
 				fBestImp = res
 			}
 
-			dis = dist(args)
+			dis = distRozenbrok(args)
 			xAvgImp += dis
 			if dis < xBestImp {
 				xBestImp = dis
 			}
 
-			if res < 0.01 {
+			if math.Abs(res-actual) < eps {
 				cImp++
 			}
-
-			if i == 99 {
-				sworm.Print()
-			}
-
 		}
 
-		fmt.Printf("Размерность: %d\n", rasm[j])
 		fmt.Printf("F лучшее: %e\n", fBestBasic)
-		fmt.Printf("F среднее: %e\n", fAvgBasic/100)
 		fmt.Printf("X лучшее: %e\n", xBestBasic)
-		fmt.Printf("X среднее: %e\n", xAvgBasic/100)
+		fmt.Printf("F среднее: %e\n", fAvgBasic/100.)
+		fmt.Printf("X среднее: %e\n", xAvgBasic/100.)
 		fmt.Printf("Вероятность: %f\n", float64(cBasic)/100.)
 		fmt.Println("----------------------------------")
 
-		fmt.Printf("Размерность: %d\n", rasm[j])
 		fmt.Printf("F лучшее: %e\n", fBestImp)
-		fmt.Printf("F среднее: %e\n", fAvgImp/100)
 		fmt.Printf("X лучшее: %e\n", xBestImp)
-		fmt.Printf("X среднее: %e\n", xAvgImp/100)
+		fmt.Printf("F среднее: %e\n", fAvgImp/100.)
+		fmt.Printf("X среднее: %e\n", xAvgImp/100.)
 		fmt.Printf("Вероятность: %f\n", float64(cImp)/100.)
 		fmt.Println("----------------------------------")
+
+		fb, err := os.Create(fmt.Sprintf("basic%d", rasm[r]))
+		if err != nil {
+			fmt.Printf("can't create file: %v\n", err)
+		}
+		utils.Plot(fb, basicG)
+
+		fi, err := os.Create(fmt.Sprintf("improved%d", rasm[r]))
+		if err != nil {
+			fmt.Printf("can't create file: %v\n", err)
+		}
+		utils.Plot(fi, impG)
+
+		fb.Close()
+		fi.Close()
+
 	}
 
-	fb, err := os.Create("basic")
-	if err != nil {
-		fmt.Printf("can't create file: %v\n", err)
-	}
-
-	for i := range basicG {
-		basicG[i].F = basicG[i].F / 100.
-	}
-	utils.Plot(fb, basicG)
-
-	fi, err := os.Create("improved")
-	if err != nil {
-		fmt.Printf("can't create file: %v\n", err)
-	}
-	for i := range impG {
-		impG[i].F = impG[i].F / 100.
-	}
-	utils.Plot(fi, impG)
-
-	fb.Close()
-	fi.Close()
 }

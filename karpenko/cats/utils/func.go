@@ -5,6 +5,13 @@ import "math"
 // FitnessFunction - функция приспособленности
 type FitnessFunction func(args []float64) float64
 
+// ok {1, 1}
+var Levi13 FitnessFunction = func(args []float64) float64 {
+	x := args[0]
+	y := args[1]
+	return math.Pow(math.Sin(3.*math.Pi*x), 2) + (x-1)*(x-1)*(1+math.Pow(math.Sin(3.*math.Pi*y), 2)) + (y-1)*(y-1)*(1+math.Pow(math.Sin(2*math.Pi*y), 2))
+}
+
 // ok {0, 0, 0 ...}
 var Rastrigin FitnessFunction = func(x []float64) float64 {
 	A := 10.

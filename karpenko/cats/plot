@@ -1,6 +1,8 @@
 set terminal png
-set output 'out.png'
-set xrange [0:100]
-set nonlinear y via log10(y) inverse 10**y 
+set xrange [0:1000]
+set nonlinear y via log10(y) inverse 10**y
 set ytics nolog
-plot 'basic' u 1:2 with lines title 'basic', 'improved' u 1:2 with lines title 'improved'
+do for [indx in "2 4 8 16 32 64"] {
+    set output 'out'.indx.'.png'
+    plot 'basic'.indx u 1:2 with lines title 'basic', 'improved'.indx u 1:2 with lines title 'improved'
+}

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 )
@@ -21,7 +22,18 @@ func Add(l []Graph, r []Graph) []Graph {
 }
 
 func Plot(f *os.File, graph []Graph) {
+	prev := graph[0].F
+	it := 0
 	for _, v := range graph {
+		if math.Abs(prev-v.F) < 0.000001 {
+			it++
+		} else {
+			prev = v.F
+			it = 0
+		}
+		if it == 20 {
+			return
+		}
 		_, err := f.WriteString(fmt.Sprintf("%d\t%E\n", v.It, v.F))
 		if err != nil {
 			fmt.Printf("can't write to file: %v\n", err)

@@ -56,7 +56,7 @@ func genRandVelocities(dimensions int, maxSeekingVelosicty float64, it int) []fl
 	a := 0.9
 	velocities := make([]float64, 0, dimensions)
 	for i := 0; i < dimensions; i++ {
-		randVelocity := rand.Float64() * maxSeekingVelosicty * genRandMinus() * (float64(100) - float64(it)) / float64(100) * a
+		randVelocity := rand.Float64() * maxSeekingVelosicty * genRandMinus() * (float64(1000) - float64(it)) / float64(1000) * a
 		velocities = append(velocities, randVelocity)
 	}
 
